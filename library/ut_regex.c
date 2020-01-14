@@ -11,8 +11,7 @@
 #include <regex.h>
 
 #include "nano/ut.h"
-#include "nano/countof.h"
-#include "nano/regex.h"
+#include "nano/ut_regex.h"
 
 /* ------------------------------------------------------------------------- */
 const char *regex_find_ex(const char *source, const char *regex, ...)

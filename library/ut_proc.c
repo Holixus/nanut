@@ -24,8 +24,10 @@
 #include <dirent.h>
 
 #include "nano/ut.h"
-#include "nano/proc.h"
-#include "nano/countof.h"
+#include "nano/ut_str.h"
+#include "nano/ut_sleep.h"
+#include "nano/ut_file.h"
+#include "nano/ut_proc.h"
 
 static int _execvp(char const *file, char *const argv[]) __attribute__ ((noreturn));
 static void _vexecf(char const *fmt, va_list ap) __attribute__ ((noreturn));
@@ -255,7 +257,7 @@ static int sio_read(int std, char *buf, size_t size)
 
 /* ------------------------------------------------------------------------ */
 // redirect stderr to syslog
-static pid_t proc_lfork(char *argv[], char const *fileout)
+static pid_t lfork(char *argv[], char const *fileout)
 {
 	int serr[2];
 	if (pipe(serr) < 0)
@@ -330,7 +332,7 @@ int proc_lcmdf(char const *fmt, ...)
 
 /* ------------------------------------------------------------------------ */
 // redirect stdout to text buffer
-static pid_t proc_snfork(char *str, size_t size, char *argv[])
+static pid_t snfork(char *str, size_t size, char *argv[])
 {
 	int sout[2];
 	if (pipe(sout) < 0)
@@ -402,14 +404,14 @@ int proc_systemf(char const *format, ...)
 char const *proc_name()
 {
 	static char name[36];
-	file_readf(strf("/proc/%u/status", getpid()), "Name: %32s", name);
+	ut_file_readf(strf("/proc/%u/status", getpid()), "Name: %32s", name);
 	return name;
 }
 
 
 /* ------------------------------------------------------------------------ */
 // send signal to all processes with '/proc/%u/status; Name' equal proc
-int killall(char const *proc, int sig)
+int proc_killall(char const *proc, int sig)
 {
 	static char const procfs[] = "/proc";
 	DIR *dir = opendir(procfs);
@@ -419,7 +421,7 @@ int killall(char const *proc, int sig)
 	struct dirent *next;
 	int counter = 0;
 	int is_regex = !!strchr(proc, '|');
-	char file[64];
+	char file[280];
 
 	sprintf(file, "%s/", procfs);
 
@@ -433,7 +435,7 @@ int killall(char const *proc, int sig)
 		sprintf(file + sizeof procfs, "%s/status", d_name);
 
 		char status[64], name[64];
-		if (readStrFromFile(file, status, sizeof status) < 0)
+		if (ut_file_read_str(file, status, sizeof status) < 0)
 			continue ; // skip failed files
 
 		sscanf(status, "Name: %s", name);
@@ -469,7 +471,7 @@ pid_t proc_find_by_cmd(char const *cmd)
 		return -1;
 
 	struct dirent *next;
-	char file[64];
+	char file[280];
 	sprintf(file, "%s/", procfs);
 
 	while ((next = readdir(dir))) {
@@ -482,7 +484,7 @@ pid_t proc_find_by_cmd(char const *cmd)
 		sprintf(file + sizeof procfs, "%s/cmdline", d_name);
 
 		char cmdline[256];
-		int len = readStrFromFile(file, cmdline, sizeof cmdline);
+		int len = ut_file_read_str(file, cmdline, sizeof cmdline);
 
 		if (len > 0) {
 			char *end = cmdline + len - 1, *p = cmdline;
@@ -503,7 +505,7 @@ pid_t proc_find_by_cmd(char const *cmd)
 
 /* ------------------------------------------------------------------------ */
 // send signal to process by its pid file
-int proc_kill_pid_file(int signal, char const *fmt, ...)
+int proc_kill_pid_file(int signal, char const *file, ...)
 {
 	char name[256];
 
@@ -512,7 +514,7 @@ int proc_kill_pid_file(int signal, char const *fmt, ...)
 	vsnprintf(name, sizeof name, file, ap);
 	va_end(ap);
 
-	pid_t pid = readNumFromFile(name);
+	pid_t pid = ut_file_read_num(name, &pid);
 	if (pid < 0)
 		return 0; // like killed already
 
@@ -523,7 +525,7 @@ int proc_kill_pid_file(int signal, char const *fmt, ...)
 		} else {
 			int c = 0;
 			for (;!kill(pid, 0); ++c) {
-				safe_msleep(100);
+				ut_usleep(100000);
 				if (c > 2) {
 					kill(pid, SIGKILL);
 					break;
@@ -546,7 +548,7 @@ pid_t proc_find_by_name(char const *name)
 	if (!dir)
 		return -1;
 
-	char file[64];
+	char file[280];
 	sprintf(file, "%s/", procfs);
 
 	struct dirent *next;
@@ -560,7 +562,7 @@ pid_t proc_find_by_name(char const *name)
 
 		sprintf(file + sizeof procfs, "%s/status", d_name);
 
-		if (readStrFromFile(file, text, sizeof text) < 0) {
+		if (ut_file_read_str(file, text, sizeof text) < 0) {
 			closedir(dir);
 			return -1;
 		}
@@ -591,12 +593,12 @@ static int get_pdata(proc_t *data)
 {
 	char text[128], cmd[256];
 	char state;
-	if (readStrFromFile(strf("/proc/%u/stat", data->pid), text, sizeof text) < 0)
+	if (ut_file_read_str(strf("/proc/%u/stat", data->pid), text, sizeof text) < 0)
 		return -1;
 	if (sscanf(text, "%u %s %c %u %*s", &data->pid, cmd, &state, &data->ppid) < 4)
 		return -1;
 
-	int len = readStrFromFile(strf("/proc/%u/cmdline", data->pid), data->cmd, sizeof data->cmd);
+	int len = ut_file_read_str(strf("/proc/%u/cmdline", data->pid), data->cmd, sizeof data->cmd);
 
 	if (len) {
 		char *end = data->cmd + len - 1, *p = data->cmd;

@@ -5,6 +5,8 @@ PROJECT(nanut)
 OPTION(BUILD_SHARED_LIBRARY "Build shared library" OFF)
 OPTION(BUILD_TESTS "Build tests application" OFF)
 
+OPTION(ENABLE_MEMORY_STATISTICS "" OFF)
+
 
 ADD_DEFINITIONS(-pipe --std=gnu99 -ftabstop=4 -Wno-unused-function)
 ADD_DEFINITIONS(-Wall -Wmissing-declarations -Winit-self -Wswitch-enum -Wundef)
@@ -30,7 +32,7 @@ ENDIF(BUILD_SHARED_LIBRARY)
 
 
 SET(CMAKE_C_FLAGS_RELEASE "-Os -Werror -ffast-math -fmerge-all-constants -ffunction-sections -fdata-sections -fno-asynchronous-unwind-tables")
-SET(CMAKE_C_FLAGS_DEBUG   "-O0 -g3")
+SET(CMAKE_C_FLAGS_DEBUG   "-O0 -Werror -g3")
 
 
 IF(BUILD_TESTS)

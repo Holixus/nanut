@@ -12,7 +12,7 @@
 #include <sys/types.h>
 
 #include "nano/ut.h"
-#include "nano/str.h"
+#include "nano/ut_str.h"
 
 /* ------------------------------------------------------------------------ */
 char const *strf(char const *format, ...)
@@ -25,25 +25,6 @@ char const *strf(char const *format, ...)
 	vsnprintf(str, sizeof buf[0], format, ap);
 	va_end(ap);
 	return str;
-}
-
-
-/* ------------------------------------------------------------------------ */
-void oprintf(out_t *o, char const *fmt, ...)
-{
-	va_list ap;
-	va_start(ap, fmt);
-	o->p += (size_t)vsnprintf(o->p, (size_t)(o->e - o->p), fmt, ap);
-	va_end(ap);
-}
-
-
-/* ------------------------------------------------------------------------ */
-void oend(out_t *o, char delim)
-{
-	if (o->e <= o->p || o->e[-1] != delim)
-		return;
-	*--(o->e) = 0;
 }
 
 

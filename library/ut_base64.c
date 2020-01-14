@@ -1,7 +1,8 @@
 #include <stddef.h>
+#include <sys/types.h>
 
 #include "nano/ut.h"
-#include "nano/base64.h"
+#include "nano/ut_base64.h"
 
 /* -------------------------------------------------------------------------- */
 static inline unsigned int _b64_demap(char i) {
