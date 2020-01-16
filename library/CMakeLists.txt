@@ -1,9 +1,8 @@
 cmake_minimum_required(VERSION 2.6)
 
-PROJECT(nanut)
+SET(LIB_NAME nanut)
 
 OPTION(BUILD_SHARED_LIBRARY "Build shared library" OFF)
-OPTION(BUILD_TESTS "Build tests application" OFF)
 
 OPTION(ENABLE_MEMORY_STATISTICS "" OFF)
 
@@ -14,13 +13,9 @@ ADD_DEFINITIONS(-Wmissing-field-initializers -Wredundant-decls -Wpointer-arith)
 
 ADD_DEFINITIONS(-D_GNU_SOURCE)
 
-SET(static_library_target ${CMAKE_PROJECT_NAME}_static)
-SET(shared_library_target ${CMAKE_PROJECT_NAME})
+SET(static_library_target ${LIB_NAME}_static)
+SET(shared_library_target ${LIB_NAME})
 
-IF(BUILD_TESTS)
-	ADD_EXECUTABLE(tests tests.c)
-	TARGET_LINK_LIBRARIES(tests ${static_library_target})
-ENDIF(BUILD_TESTS)
 
 FILE(GLOB LIB_SOURCES ut_*.c)
 
@@ -35,25 +30,12 @@ SET(CMAKE_C_FLAGS_RELEASE "-Os -Werror -ffast-math -fmerge-all-constants -ffunct
 SET(CMAKE_C_FLAGS_DEBUG   "-O0 -Werror -g3")
 
 
-IF(BUILD_TESTS)
-	SET_TARGET_PROPERTIES(tests PROPERTIES COMPILE_FLAGS -fvisibility=hidden)
-	SET_TARGET_PROPERTIES(tests PROPERTIES LINK_FLAGS -Wl,--gc-sections,--build-id=none)
-ENDIF(BUILD_TESTS)
-
 SET_TARGET_PROPERTIES(${static_library_target} PROPERTIES LINK_FLAGS -Wl,--gc-sections,--build-id=none)
 
 IF(BUILD_SHARED_LIBRARY)
 	SET_TARGET_PROPERTIES(${shared_library_target} PROPERTIES LINK_FLAGS -Wl,--gc-sections,--build-id=none)
 ENDIF()
 
-
-IF(BUILD_TESTS)
-	INSTALL(TARGETS tests
-		ARCHIVE DESTINATION lib
-		LIBRARY DESTINATION lib
-		RUNTIME DESTINATION bin
-	)
-ENDIF(BUILD_TESTS)
 
 INSTALL(TARGETS ${static_library_target}
 	ARCHIVE DESTINATION lib

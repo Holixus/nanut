@@ -29,6 +29,32 @@ char const *strf(char const *format, ...)
 
 
 /* ------------------------------------------------------------------------ */
+int url_gethost(char *host, size_t size, char const *url)
+{
+	char const *h = strchr(url, ':');
+	if (!h || h[1] != '/' || h[2] != '/')
+		return -1;
+	h += 3;
+	char const *e = strchr(h, '@'); // skip login:pass@ part
+	if (e)
+		h = e += 1;
+	else
+		e = h;
+	for (; *e && *e != ':' && *e != '/' && *e != '?' && *e != '#'; ++e)
+		;
+	size_t len = (size_t)(e - h);
+	if (size - 1 < len) {
+		//syslog(LOG_DEBUG, "'%s' -> too long host name", url);
+		return -1;
+	}
+	memcpy(host, h, len);
+	host[len] = 0;
+	//syslog(LOG_DEBUG, "'%s' -> %s[%d]", url, host, len);
+	return 0;
+}
+
+
+/* ------------------------------------------------------------------------ */
 int url_getport(char const *url)
 {
 	char const *h = strchr(url, ':'); // skip service name
