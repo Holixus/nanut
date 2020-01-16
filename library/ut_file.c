@@ -41,11 +41,21 @@ int ut_read(int fd, char *data, int size)
 /* ------------------------------------------------------------------------ */
 int ut_write(int fd, char const *data, int size)
 {
+	if (!size)
+		return 0;
+
+	char const *end = data + size;
 	int ret;
 	do {
-		ret = write(fd, data, size);
-	} while (ret < 0 && errno == EINTR);
-	return ret;
+		do {
+			ret = write(fd, data, (unsigned)(end - data));
+		} while (ret < 0 && errno == EINTR);
+
+		if (ret < 0)
+			return ret;
+	} while ((data += ret) < end);
+
+	return size;
 }
 
 
