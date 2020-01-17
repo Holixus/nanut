@@ -29,6 +29,15 @@ char const *strf(char const *format, ...)
 
 
 /* ------------------------------------------------------------------------ */
+int str_replace_char(char *str, char ch, char rep)
+{
+	while ((str = strchr(str, ch)))
+		*str++ = rep;
+	return 0;
+}
+
+
+/* ------------------------------------------------------------------------ */
 int url_gethost(char *host, size_t size, char const *url)
 {
 	char const *h = strchr(url, ':');
@@ -88,15 +97,6 @@ int url_getport(char const *url)
 _ret:
 	//syslog(LOG_DEBUG, "'%s' -> port %d", url, port);
 	return port;
-}
-
-
-/* ------------------------------------------------------------------------ */
-int str_rechrs(char *str, char ch, char rep)
-{
-	while ((str = strchr(str, ch)))
-		*str++ = rep;
-	return 0;
 }
 
 
