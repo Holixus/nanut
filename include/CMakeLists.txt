@@ -1,4 +1,5 @@
-option(INSTALL_NANO_UT_HEADERS "Install libnanut headers." ON)
+option(INSTALL_NANO_UT_HEADERS  "Install libnanut headers." ON)
+option(ENABLE_MEMORY_STATISTICS "Enable accumulating of 'ut_malloc' memory usage statictics" OFF)
 
 if(INSTALL_NANO_UT_HEADERS)
 

@@ -34,22 +34,22 @@ enum ut_mem_stat_op { IMS_ALLOC, IMS_FREE };
 void ut_mem_stat(ut_mem_stat_t *ctx, int op, size_t size);
 
 
-void *ut_mem_malloc(char const *ctx, size_t size);
-void *ut_mem_calloc(char const *ctx, size_t nmemb, size_t size);
-void ut_mem_free(char const *ctx, void *p);
-void *ut_mem_realloc(char const *ctx, void *p, size_t size);
-void *ut_mem_reallocarray(char const *ctx, void *p, size_t nmemb, size_t size);
+void *ut_malloc(char const *ctx, size_t size);
+void *ut_calloc(char const *ctx, size_t nmemb, size_t size);
+void ut_free(char const *ctx, void *p);
+void *ut_realloc(char const *ctx, void *p, size_t size);
+void *ut_reallocarray(char const *ctx, void *p, size_t nmemb, size_t size);
 
 
 
 #else
 
-#define ut_mem_set_context(id)
-#define ut_mem_malloc(ctx, size)                     malloc(size)
-#define ut_mem_calloc(ctx, nmemb, size)              calloc(nmemb, size)
-#define ut_mem_free(ctx, ptr)                        free(ptr)
-#define ut_mem_realloc(ctx, ptr, size)               realloc(ptr, size)
-#define ut_mem_reallocarray(ctx, ptr, nmemb, size)   reallocarray(ptr, nmemb, size)
+#define ut_set_context(id)
+#define ut_malloc(ctx, size)                     malloc(size)
+#define ut_calloc(ctx, nmemb, size)              calloc(nmemb, size)
+#define ut_free(ctx, ptr)                        free(ptr)
+#define ut_realloc(ctx, ptr, size)               realloc(ptr, size)
+#define ut_reallocarray(ctx, ptr, nmemb, size)   reallocarray(ptr, nmemb, size)
 
 #endif
 

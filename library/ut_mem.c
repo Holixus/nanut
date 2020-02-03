@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
+#include <syslog.h>
 
 #include "nano/ut.h"
 #include "nano/ut_mem.h"
@@ -7,16 +8,6 @@
 #ifdef ENABLE_MEMORY_STATISTICS
 
 #define CONFIG_MEM_CONTEXTS_LIMIT 20
-
-/* -------------------------------------------------------------------------- */
-typedef
-struct {
-	char id[16];
-	int size;
-	int peak;
-	int allocs_counter;
-	int frees_counter;
-} ut_mem_stat_t;
 
 
 /* -------------------------------------------------------------------------- */
@@ -30,7 +21,7 @@ ut_mem_stat_t *ut_mem_stat_context;
 
 
 /* -------------------------------------------------------------------------- */
-static void ut_mem_set_context(char const *id)
+void ut_mem_set_context(char const *id)
 {
 	ut_mem_stat_t *p = ut_mem_stat_list, *e = ut_mem_stat_list + ut_mem_stat_count;
 	for (; p < e; ++p)
@@ -53,10 +44,7 @@ static void ut_mem_set_context(char const *id)
 }
 
 /* -------------------------------------------------------------------------- */
-enum { IMS_ALLOC, IMS_FREE };
-
-/* -------------------------------------------------------------------------- */
-static void ut_mem_stat(ut_mem_stat_t *ctx, int op, size_t size)
+void ut_mem_stat(ut_mem_stat_t *ctx, int op, size_t size)
 {
 	switch (op) {
 	case IMS_ALLOC:
@@ -78,7 +66,7 @@ static void ut_mem_stat(ut_mem_stat_t *ctx, int op, size_t size)
 
 
 /* -------------------------------------------------------------------------- */
-static void *ut_mem_malloc(char const *ctx, size_t size)
+void *ut_malloc(char const *ctx, size_t size)
 {
 	ut_mem_set_context(ctx);
 	ut_mem_stat(&ut_mem_stat_total,  IMS_ALLOC, size);
@@ -89,7 +77,7 @@ static void *ut_mem_malloc(char const *ctx, size_t size)
 }
 
 /* -------------------------------------------------------------------------- */
-static void *ut_mem_calloc(char const *ctx, size_t nmemb, size_t size)
+void *ut_calloc(char const *ctx, size_t nmemb, size_t size)
 {
 	ut_mem_set_context(ctx);
 	ut_mem_stat(&ut_mem_stat_total,  IMS_ALLOC, size);
@@ -100,7 +88,7 @@ static void *ut_mem_calloc(char const *ctx, size_t nmemb, size_t size)
 }
 
 /* -------------------------------------------------------------------------- */
-static void ut_mem_free(char const *ctx, void *p)
+void ut_free(char const *ctx, void *p)
 {
 	ut_mem_set_context(ctx);
 	size_t *f = (size_t *)p - 1;
@@ -111,7 +99,7 @@ static void ut_mem_free(char const *ctx, void *p)
 }
 
 /* -------------------------------------------------------------------------- */
-static void *ut_mem_realloc(char const *ctx, void *p, size_t size)
+void *ut_realloc(char const *ctx, void *p, size_t size)
 {
 	ut_mem_set_context(ctx);
 	size_t *f = (size_t *)p - 1;
@@ -126,7 +114,7 @@ static void *ut_mem_realloc(char const *ctx, void *p, size_t size)
 }
 
 /* -------------------------------------------------------------------------- */
-static void *ut_mem_reallocarray(char const *ctx, void *p, size_t nmemb, size_t size)
+void *ut_reallocarray(char const *ctx, void *p, size_t nmemb, size_t size)
 {
 	ut_mem_set_context(ctx);
 	size_t *f = (size_t *)p - 1;

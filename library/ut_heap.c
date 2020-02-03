@@ -8,7 +8,7 @@
 /* -------------------------------------------------------------------------- */
 int lh_init(looped_heap_t *h, size_t data_limit)
 {
-	h->data = ut_mem_malloc("lh-heap", data_limit);
+	h->data = ut_malloc("lh-heap", data_limit);
 	if (!h->data)
 		return -1;
 	h->data_limit = h->loop_size = data_limit;
@@ -20,7 +20,7 @@ int lh_init(looped_heap_t *h, size_t data_limit)
 /* -------------------------------------------------------------------------- */
 void lh_free(looped_heap_t *h)
 {
-	ut_mem_free("lh-heap", h->data);
+	ut_free("lh-heap", h->data);
 	memset(h, 0, sizeof *h);
 }
 
@@ -37,7 +37,7 @@ void lh_empty(looped_heap_t *h)
 int lh_grow(looped_heap_t *h, size_t size)
 {
 	size_t data_limit = h->data_limit + size;
-	char *data = ut_mem_malloc("lh-heap", data_limit);
+	char *data = ut_malloc("lh-heap", data_limit);
 	if (!data)
 		return -1;
 	if (h->end > h->begin) {
@@ -50,7 +50,7 @@ int lh_grow(looped_heap_t *h, size_t size)
 		h->end -= h->begin;
 		h->begin = 0;
 	}
-	ut_mem_free("lh-heap", h->data);
+	ut_free("lh-heap", h->data);
 	h->data = data;
 	h->data_limit = h->loop_size = data_limit;
 	return 0;
