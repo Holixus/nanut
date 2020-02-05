@@ -310,3 +310,39 @@ int ut_mkdirf(char const *format, ...)
 	return mkdir(dir, 0755);
 }
 
+/* ------------------------------------------------------------------------ */
+int ut_mkpath(char const *_path, int to_file)
+{
+	char path[strlen(_path) + 1];
+	memcpy(path, _path, sizeof path);
+	struct stat s;
+	char *slash = path, ch = '/';
+
+	if (*slash == '/')
+		++slash;
+
+	do {
+		if ((slash = strchr(slash, '/')))
+			*slash = 0;
+		else
+			if (to_file)
+				break;
+			else
+				ch = 0;
+
+		if (stat(path, &s) < 0
+				? mkdir(path, 0777) < 0
+				: !S_ISDIR(s.st_mode))
+			goto _fail;
+
+		if (ch)
+			*slash++ = ch;
+	} while (ch);
+
+	return 0;
+
+_fail:
+	*slash = ch;
+	return -1;
+}
+

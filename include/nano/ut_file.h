@@ -32,5 +32,6 @@ int ut_file_appendf(char const *file_name, char const *format, ...) __attribute_
 
 ssize_t ut_file_copy(char const *dst_file, char const *src_file);
 int ut_mkdirf(char const *format, ...) __attribute__ ((format (printf, 1, 2)));
+int ut_mkpath(char const *path, int to_file);
 
 #endif
